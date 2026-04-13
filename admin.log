@@ -1,0 +1,2 @@
+# command-line-arguments
+cmd/admin/main.go:10:2: "github.com/chess-puzzle-app/backend/internal/engine" imported and not used

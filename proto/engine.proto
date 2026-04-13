@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package engine;
+
+option go_package = "github.com/chess-puzzle-app/backend/proto/engine";
+
+service EngineService {
+  // AnalyzePosition evaluates a chess position given in FEN format
+  rpc AnalyzePosition(PositionRequest) returns (AnalysisResponse);
+}
+
+message PositionRequest {
+  string fen = 1;
+  int32 depth = 2;
+  int32 timeout_ms = 3;
+}
+
+message AnalysisResponse {
+  string best_move = 1;
+  double evaluation = 2;
+  string info = 3;
+}

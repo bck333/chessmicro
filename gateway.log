@@ -1,0 +1,70 @@
+[GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
+
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /                         --> main.main.func1 (3 handlers)
+[GIN-debug] GET    /admin/*path              --> main.main.func4 (4 handlers)
+[GIN-debug] POST   /admin/*path              --> main.main.func4 (4 handlers)
+[GIN-debug] PUT    /admin/*path              --> main.main.func4 (4 handlers)
+[GIN-debug] PATCH  /admin/*path              --> main.main.func4 (4 handlers)
+[GIN-debug] HEAD   /admin/*path              --> main.main.func4 (4 handlers)
+[GIN-debug] OPTIONS /admin/*path              --> main.main.func4 (4 handlers)
+[GIN-debug] DELETE /admin/*path              --> main.main.func4 (4 handlers)
+[GIN-debug] CONNECT /admin/*path              --> main.main.func4 (4 handlers)
+[GIN-debug] TRACE  /admin/*path              --> main.main.func4 (4 handlers)
+[GIN-debug] GET    /api/v1/*path             --> main.main.func5 (4 handlers)
+[GIN-debug] POST   /api/v1/*path             --> main.main.func5 (4 handlers)
+[GIN-debug] PUT    /api/v1/*path             --> main.main.func5 (4 handlers)
+[GIN-debug] PATCH  /api/v1/*path             --> main.main.func5 (4 handlers)
+[GIN-debug] HEAD   /api/v1/*path             --> main.main.func5 (4 handlers)
+[GIN-debug] OPTIONS /api/v1/*path             --> main.main.func5 (4 handlers)
+[GIN-debug] DELETE /api/v1/*path             --> main.main.func5 (4 handlers)
+[GIN-debug] CONNECT /api/v1/*path             --> main.main.func5 (4 handlers)
+[GIN-debug] TRACE  /api/v1/*path             --> main.main.func5 (4 handlers)
+2026/04/12 22:53:45 Gateway starting on port 8080
+[GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
+Please check https://github.com/gin-gonic/gin/blob/master/docs/doc.md#dont-trust-all-proxies for details.
+[GIN-debug] Listening and serving HTTP on :8080
+[GIN] 2026/04/12 - 22:53:45 | 404 | 158.375µs |             ::1 | GET      "/api/v1/"
+[GIN] 2026/04/12 - 22:53:49 | 308 |  16.68ms |             ::1 | GET      "/admin/"
+[GIN-debug] redirecting request 301: /admin/ --> /admin/
+[GIN] 2026/04/12 - 22:53:49 | 308 |   1.78ms |             ::1 | GET      "/admin/"
+[GIN-debug] redirecting request 301: /admin/ --> /admin/
+[GIN] 2026/04/12 - 22:53:49 | 308 |   1.16ms |             ::1 | GET      "/admin/"
+[GIN-debug] redirecting request 301: /admin/ --> /admin/
+[GIN] 2026/04/12 - 22:53:49 | 308 |   1.11ms |             ::1 | GET      "/admin/"
+[GIN-debug] redirecting request 301: /admin/ --> /admin/
+[GIN] 2026/04/12 - 22:53:49 | 308 |   2.01ms |             ::1 | GET      "/admin/"
+[GIN-debug] redirecting request 301: /admin/ --> /admin/
+[GIN] 2026/04/12 - 22:53:49 | 308 |    840µs |             ::1 | GET      "/admin/"
+[GIN-debug] redirecting request 301: /admin/ --> /admin/
+[GIN] 2026/04/12 - 22:53:49 | 308 | 728.292µs |             ::1 | GET      "/admin/"
+[GIN-debug] redirecting request 301: /admin/ --> /admin/
+[GIN] 2026/04/12 - 22:53:49 | 308 | 653.666µs |             ::1 | GET      "/admin/"
+[GIN-debug] redirecting request 301: /admin/ --> /admin/
+[GIN] 2026/04/12 - 22:53:49 | 308 | 634.084µs |             ::1 | GET      "/admin/"
+[GIN-debug] redirecting request 301: /admin/ --> /admin/
+[GIN] 2026/04/12 - 22:53:49 | 308 | 772.084µs |             ::1 | GET      "/admin/"
+[GIN-debug] redirecting request 301: /admin/ --> /admin/
+[GIN-debug] redirecting request 301: /admin/ --> /admin/
+[GIN] 2026/04/12 - 22:54:19 | 308 |   1.42ms |             ::1 | GET      "/admin/"
+[GIN-debug] redirecting request 301: /admin/ --> /admin/
+[GIN] 2026/04/12 - 22:54:19 | 308 | 669.458µs |             ::1 | GET      "/admin/"
+[GIN-debug] redirecting request 301: /admin/ --> /admin/
+[GIN] 2026/04/12 - 22:54:19 | 308 | 923.625µs |             ::1 | GET      "/admin/"
+[GIN-debug] redirecting request 301: /admin/ --> /admin/
+[GIN] 2026/04/12 - 22:54:19 | 308 | 454.583µs |             ::1 | GET      "/admin/"
+[GIN-debug] redirecting request 301: /admin/ --> /admin/
+[GIN] 2026/04/12 - 22:54:19 | 308 | 390.791µs |             ::1 | GET      "/admin/"
+[GIN-debug] redirecting request 301: /admin/ --> /admin/
+[GIN] 2026/04/12 - 22:54:19 | 308 | 369.167µs |             ::1 | GET      "/admin/"
+[GIN-debug] redirecting request 301: /admin/ --> /admin/
+[GIN] 2026/04/12 - 22:54:19 | 308 | 489.458µs |             ::1 | GET      "/admin/"
+[GIN-debug] redirecting request 301: /admin/ --> /admin/
+[GIN] 2026/04/12 - 22:54:19 | 308 | 353.084µs |             ::1 | GET      "/admin/"
+[GIN-debug] redirecting request 301: /admin/ --> /admin/
+[GIN] 2026/04/12 - 22:54:19 | 308 |    495µs |             ::1 | GET      "/admin/"
+[GIN-debug] redirecting request 301: /admin/ --> /admin/
+[GIN] 2026/04/12 - 22:54:19 | 308 | 380.083µs |             ::1 | GET      "/admin/"
