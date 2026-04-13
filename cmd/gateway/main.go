@@ -75,9 +75,11 @@ func main() {
 	adminFrontendProxy := newProxy(adminFrontendTarget, "ADMIN_UI")
 
 	// Admin UI Routing
-	r.Any("/admin/*path", func(c *gin.Context) {
+	adminProxyHandler := func(c *gin.Context) {
 		adminFrontendProxy.ServeHTTP(c.Writer, c.Request)
-	})
+	}
+	r.Any("/admin", adminProxyHandler)
+	r.Any("/admin/*path", adminProxyHandler)
 
 	r.Any("/api/v1/*path", func(c *gin.Context) {
 		path := c.Param("path")

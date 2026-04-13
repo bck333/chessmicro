@@ -6,6 +6,21 @@
 - Local:         http://localhost:3000
 - Network:       http://10.155.135.158:3000
 - Environments: .env.local
-✓ Ready in 275ms
+✓ Ready in 189ms
 
-[?25h
+ GET /puzzles 200 in 344ms (next.js: 258ms, application-code: 87ms)
+ GET / 200 in 163ms (next.js: 155ms, application-code: 8ms)
+ GET /users 200 in 158ms (next.js: 149ms, application-code: 8ms)
+[browser] Each child in a list should have a unique "key" prop.
+
+Check the render method of `UsersTable`. See https://react.dev/link/warning-keys for more information. 
+ GET /categories 200 in 157ms (next.js: 149ms, application-code: 8ms)
+ GET /settings 200 in 152ms (next.js: 144ms, application-code: 8ms)
+ GET /users 200 in 24ms (next.js: 3ms, application-code: 20ms)
+ GET /categories 200 in 26ms (next.js: 4ms, application-code: 22ms)
+ GET / 200 in 23ms (next.js: 4ms, application-code: 19ms)
+ GET /puzzles 200 in 19ms (next.js: 6ms, application-code: 13ms)
+ GET /puzzles/5ef17695-9321-46bd-8d2a-1041cf3f07fd/edit 200 in 376ms (next.js: 365ms, application-code: 10ms)
+ GET / 200 in 24ms (next.js: 4ms, application-code: 21ms)
+ GET /settings 200 in 22ms (next.js: 4ms, application-code: 18ms)
+ HEAD / 200 in 47ms (next.js: 1116µs, application-code: 46ms)

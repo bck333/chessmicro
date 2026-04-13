@@ -7,7 +7,6 @@ import (
 	"github.com/chess-puzzle-app/backend/internal/categories"
 	"github.com/chess-puzzle-app/backend/internal/config"
 	"github.com/chess-puzzle-app/backend/internal/database"
-	"github.com/chess-puzzle-app/backend/internal/engine"
 	"github.com/chess-puzzle-app/backend/internal/puzzles"
 	"github.com/chess-puzzle-app/backend/internal/settings"
 	"github.com/gin-gonic/gin"

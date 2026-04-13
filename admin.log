@@ -1,2 +1,60 @@
-# command-line-arguments
-cmd/admin/main.go:10:2: "github.com/chess-puzzle-app/backend/internal/engine" imported and not used
+2026/04/13 23:53:40 Database connection established
+2026/04/13 23:53:40 Database migrations applied
+[GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
+
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /api/v1/admin/stats       --> github.com/chess-puzzle-app/backend/internal/admin.(*AdminHandler).GetStats-fm (4 handlers)
+[GIN-debug] GET    /api/v1/admin/users       --> github.com/chess-puzzle-app/backend/internal/admin.(*AdminHandler).ListUsers-fm (4 handlers)
+[GIN-debug] GET    /api/v1/admin/engine/status --> github.com/chess-puzzle-app/backend/internal/admin.(*AdminHandler).GetEngineStatus-fm (4 handlers)
+[GIN-debug] POST   /api/v1/admin/puzzles     --> github.com/chess-puzzle-app/backend/internal/puzzles.(*PuzzleHandler).CreatePuzzle-fm (4 handlers)
+[GIN-debug] PUT    /api/v1/admin/puzzles/:id --> github.com/chess-puzzle-app/backend/internal/puzzles.(*PuzzleHandler).UpdatePuzzle-fm (4 handlers)
+[GIN-debug] DELETE /api/v1/admin/puzzles/:id --> github.com/chess-puzzle-app/backend/internal/puzzles.(*PuzzleHandler).DeletePuzzle-fm (4 handlers)
+[GIN-debug] GET    /api/v1/admin/categories  --> github.com/chess-puzzle-app/backend/internal/categories.(*CategoryHandler).List-fm (4 handlers)
+[GIN-debug] POST   /api/v1/admin/categories  --> github.com/chess-puzzle-app/backend/internal/categories.(*CategoryHandler).Create-fm (4 handlers)
+[GIN-debug] PUT    /api/v1/admin/categories/:id --> github.com/chess-puzzle-app/backend/internal/categories.(*CategoryHandler).Update-fm (4 handlers)
+[GIN-debug] DELETE /api/v1/admin/categories/:id --> github.com/chess-puzzle-app/backend/internal/categories.(*CategoryHandler).Delete-fm (4 handlers)
+[GIN-debug] GET    /api/v1/admin/settings    --> github.com/chess-puzzle-app/backend/internal/settings.(*SettingHandler).List-fm (4 handlers)
+[GIN-debug] POST   /api/v1/admin/settings    --> github.com/chess-puzzle-app/backend/internal/settings.(*SettingHandler).Update-fm (4 handlers)
+2026/04/13 23:53:40 Admin Service starting on port 8084
+[GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
+Please check https://github.com/gin-gonic/gin/blob/master/docs/doc.md#dont-trust-all-proxies for details.
+[GIN-debug] Listening and serving HTTP on :8084
+[GIN] 2026/04/13 - 23:53:52 | 200 | 92.875µs |             ::1 | GET      "/api/v1/admin/engine/status"
+[GIN] 2026/04/13 - 23:53:52 | 200 | 312.416µs |             ::1 | GET      "/api/v1/admin/stats"
+[GIN] 2026/04/13 - 23:53:52 | 200 | 15.583µs |             ::1 | GET      "/api/v1/admin/engine/status"
+[GIN] 2026/04/13 - 23:53:52 | 200 |  117.5µs |             ::1 | GET      "/api/v1/admin/stats"
+[GIN] 2026/04/13 - 23:54:40 | 200 | 733.625µs |             ::1 | GET      "/api/v1/admin/users?page=1&limit=10"
+[GIN] 2026/04/13 - 23:54:40 | 200 | 220.584µs |             ::1 | GET      "/api/v1/admin/users?page=1&limit=10"
+[GIN] 2026/04/13 - 23:54:50 | 200 | 527.583µs |             ::1 | GET      "/api/v1/admin/users?page=4&limit=10"
+[GIN] 2026/04/13 - 23:54:59 | 200 | 324.833µs |             ::1 | GET      "/api/v1/admin/categories"
+[GIN] 2026/04/13 - 23:54:59 | 200 | 44.459µs |             ::1 | GET      "/api/v1/admin/categories"
+[GIN] 2026/04/13 - 23:55:00 | 200 | 352.25µs |             ::1 | GET      "/api/v1/admin/settings"
+[GIN] 2026/04/13 - 23:55:00 | 200 | 63.875µs |             ::1 | GET      "/api/v1/admin/settings"
+[GIN] 2026/04/13 - 23:55:01 | 200 | 448.666µs |             ::1 | GET      "/api/v1/admin/users?page=1&limit=10"
+[GIN] 2026/04/13 - 23:55:01 | 200 | 514.709µs |             ::1 | GET      "/api/v1/admin/users?page=1&limit=10"
+[GIN] 2026/04/13 - 23:55:05 | 200 | 170.583µs |             ::1 | GET      "/api/v1/admin/users?page=4&limit=10"
+[GIN] 2026/04/13 - 23:56:19 | 200 |  693.5µs |             ::1 | GET      "/api/v1/admin/users?page=1&limit=10"
+[GIN] 2026/04/13 - 23:56:24 | 200 | 170.292µs |             ::1 | GET      "/api/v1/admin/categories"
+[GIN] 2026/04/13 - 23:56:24 | 200 | 65.584µs |             ::1 | GET      "/api/v1/admin/categories"
+[GIN] 2026/04/13 - 23:56:28 | 200 | 145.833µs |             ::1 | GET      "/api/v1/admin/stats"
+[GIN] 2026/04/13 - 23:56:28 | 200 |  9.875µs |             ::1 | GET      "/api/v1/admin/engine/status"
+[GIN] 2026/04/13 - 23:56:28 | 200 | 110.083µs |             ::1 | GET      "/api/v1/admin/stats"
+[GIN] 2026/04/13 - 23:56:28 | 200 |     87µs |             ::1 | GET      "/api/v1/admin/engine/status"
+[GIN] 2026/04/13 - 23:56:34 | 200 | 116.375µs |             ::1 | GET      "/api/v1/admin/categories"
+[GIN] 2026/04/13 - 23:56:34 | 200 | 470.083µs |             ::1 | GET      "/api/v1/admin/categories"
+[GIN] 2026/04/13 - 23:56:40 | 200 | 23.916µs |             ::1 | GET      "/api/v1/admin/engine/status"
+[GIN] 2026/04/13 - 23:56:40 | 200 | 278.833µs |             ::1 | GET      "/api/v1/admin/stats"
+[GIN] 2026/04/13 - 23:56:40 | 200 | 12.625µs |             ::1 | GET      "/api/v1/admin/engine/status"
+[GIN] 2026/04/13 - 23:56:40 | 200 | 110.917µs |             ::1 | GET      "/api/v1/admin/stats"
+[GIN] 2026/04/13 - 23:56:41 | 200 | 115.75µs |             ::1 | GET      "/api/v1/admin/settings"
+[GIN] 2026/04/13 - 23:56:41 | 200 |  110.5µs |             ::1 | GET      "/api/v1/admin/settings"
+
+2026/04/13 23:57:05 [31;1m/Users/praxo/Desktop/expo/fullfiles/backend/internal/settings/service.go:19 [35;1mrecord not found
+[0m[33m[1.317ms] [34;1m[rows:0][0m SELECT * FROM `settings` WHERE key = "app_name" ORDER BY `settings`.`id` LIMIT 1
+[GIN] 2026/04/13 - 23:57:05 | 200 |   3.62ms |             ::1 | POST     "/api/v1/admin/settings"
+[GIN] 2026/04/13 - 23:57:05 | 200 | 448.833µs |             ::1 | GET      "/api/v1/admin/settings"
+[GIN] 2026/04/13 - 23:57:06 | 400 | 77.333µs |             ::1 | POST     "/api/v1/admin/settings"
+[GIN] 2026/04/13 - 23:57:06 | 200 |  401.5µs |             ::1 | GET      "/api/v1/admin/settings"

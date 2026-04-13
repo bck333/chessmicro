@@ -1,5 +1,5 @@
-2026/04/12 22:53:40 Database connection established
-2026/04/12 22:53:40 Database migrations applied
+2026/04/13 23:53:40 Database connection established
+2026/04/13 23:53:40 Database migrations applied
 [GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
 
 [GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
@@ -10,7 +10,7 @@
 [GIN-debug] POST   /api/v1/auth/guest        --> github.com/chess-puzzle-app/backend/internal/auth.(*AuthHandler).GuestLogin-fm (4 handlers)
 [GIN-debug] GET    /api/v1/user/me           --> github.com/chess-puzzle-app/backend/internal/users.(*UserHandler).GetMe-fm (4 handlers)
 [GIN-debug] GET    /api/v1/settings          --> github.com/chess-puzzle-app/backend/internal/settings.(*SettingHandler).List-fm (4 handlers)
-2026/04/12 22:53:40 Identity Service starting on port 8081
+2026/04/13 23:53:40 Identity Service starting on port 8081
 [GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
 Please check https://github.com/gin-gonic/gin/blob/master/docs/doc.md#dont-trust-all-proxies for details.
 [GIN-debug] Listening and serving HTTP on :8081

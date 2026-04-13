@@ -12,14 +12,23 @@ import (
 	"time"
 )
 
-// AnalysisResult holds the engine's output
-type AnalysisResult struct {
-	BestMove     string   `json:"best_move"`
+// MultiPVLine holds one of multiple engine lines
+type MultiPVLine struct {
+	Move         string   `json:"move"`
 	Evaluation   float64  `json:"evaluation"`
 	Continuation []string `json:"continuation"`
-	Depth        int      `json:"depth"`
-	MateIn       int      `json:"mate_in"` // 0 = no mate, positive = side to move mates in N, negative = side to move gets mated
-	IsMate       bool     `json:"is_mate"`
+	MateIn       int      `json:"mate_in"`
+}
+
+// AnalysisResult holds the engine's output
+type AnalysisResult struct {
+	BestMove     string        `json:"best_move"`
+	Evaluation   float64       `json:"evaluation"`
+	Continuation []string      `json:"continuation"`
+	Depth        int           `json:"depth"`
+	MateIn       int           `json:"mate_in"` // 0 = no mate, positive = side to move mates in N, negative = side to move gets mated
+	IsMate       bool          `json:"is_mate"`
+	Lines        []MultiPVLine `json:"lines"`
 }
 
 // EngineService manages a pool of Stockfish processes
@@ -164,6 +173,7 @@ func (s *EngineService) analyze(ctx context.Context, w *engineWorker, fen string
 		}
 	}
 
+	fmt.Fprintf(w.stdin, "setoption name MultiPV value 3\n")
 	fmt.Fprintf(w.stdin, "position fen %s\n", fen)
 	if depth > 0 {
 		fmt.Fprintf(w.stdin, "go depth %d movetime %d\n", depth, movetime)
@@ -192,25 +202,38 @@ func (s *EngineService) analyze(ctx context.Context, w *engineWorker, fen string
 
 			if strings.HasPrefix(line, "info") && strings.Contains(line, "score") {
 				parts := strings.Fields(line)
+				var pvLine MultiPVLine
+				var multipvIdx int
+				
 				for i, p := range parts {
 					if p == "depth" && i+1 < len(parts) {
 						d, _ := strconv.Atoi(parts[i+1])
 						result.Depth = d
 					}
+					if p == "multipv" && i+1 < len(parts) {
+						multipvIdx, _ = strconv.Atoi(parts[i+1])
+					}
 					if p == "cp" && i+1 < len(parts) {
 						score, _ := strconv.ParseFloat(parts[i+1], 64)
-						result.Evaluation = score / 100.0
-						result.IsMate = false
-						result.MateIn = 0
+						eval := score / 100.0
+						pvLine.Evaluation = eval
+						if multipvIdx <= 1 {
+							result.Evaluation = eval
+							result.IsMate = false
+							result.MateIn = 0
+						}
 					}
 					if p == "mate" && i+1 < len(parts) {
 						mateIn, _ := strconv.Atoi(parts[i+1])
-						result.MateIn = mateIn
-						result.IsMate = true
-						if mateIn > 0 {
-							result.Evaluation = 99.0
-						} else {
-							result.Evaluation = -99.0
+						pvLine.MateIn = mateIn
+						if multipvIdx <= 1 {
+							result.MateIn = mateIn
+							result.IsMate = true
+							if mateIn > 0 {
+								result.Evaluation = 99.0
+							} else {
+								result.Evaluation = -99.0
+							}
 						}
 					}
 					if p == "pv" && i+1 < len(parts) {
@@ -218,7 +241,20 @@ func (s *EngineService) analyze(ctx context.Context, w *engineWorker, fen string
 						if limit > len(parts) {
 							limit = len(parts)
 						}
-						result.Continuation = parts[i+1 : limit]
+						pvLine.Move = parts[i+1]
+						pvLine.Continuation = parts[i+1 : limit]
+						if multipvIdx <= 1 {
+							result.Continuation = pvLine.Continuation
+						}
+					}
+				}
+
+				if multipvIdx > 0 {
+					// Update or append to lines
+					if len(result.Lines) < multipvIdx {
+						result.Lines = append(result.Lines, pvLine)
+					} else {
+						result.Lines[multipvIdx-1] = pvLine
 					}
 				}
 			}
@@ -370,9 +406,10 @@ func (s *EngineService) play(ctx context.Context, w *engineWorker, fen string, o
 		finalErr = ctx.Err()
 	}
 
-	// ALWAYS reset strength limit and skill level so analysis workers stay full strength
+	// ALWAYS reset strength limit, skill level, and multipv so analysis workers stay full strength
 	fmt.Fprintln(w.stdin, "setoption name Skill Level value 20")
 	fmt.Fprintln(w.stdin, "setoption name UCI_LimitStrength value false")
+	fmt.Fprintln(w.stdin, "setoption name MultiPV value 1")
 	fmt.Fprintln(w.stdin, "isready")
 	for {
 		line, err := w.reader.ReadString('\n')
