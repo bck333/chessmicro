@@ -1,5 +1,5 @@
-2026/04/13 23:53:40 Database connection established
-2026/04/13 23:53:40 Database migrations applied
+2026/04/14 10:44:24 Database connection established
+2026/04/14 10:44:24 Database migrations applied
 [GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
 
 [GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
@@ -8,9 +8,18 @@
 
 [GIN-debug] POST   /api/v1/auth/google       --> github.com/chess-puzzle-app/backend/internal/auth.(*AuthHandler).GoogleLogin-fm (4 handlers)
 [GIN-debug] POST   /api/v1/auth/guest        --> github.com/chess-puzzle-app/backend/internal/auth.(*AuthHandler).GuestLogin-fm (4 handlers)
-[GIN-debug] GET    /api/v1/user/me           --> github.com/chess-puzzle-app/backend/internal/users.(*UserHandler).GetMe-fm (4 handlers)
+[GIN-debug] GET    /api/v1/user/me           --> github.com/chess-puzzle-app/backend/internal/users.(*UserHandler).GetMe-fm (5 handlers)
 [GIN-debug] GET    /api/v1/settings          --> github.com/chess-puzzle-app/backend/internal/settings.(*SettingHandler).List-fm (4 handlers)
-2026/04/13 23:53:40 Identity Service starting on port 8081
+2026/04/14 10:44:24 Identity Service starting on port 8081
 [GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
 Please check https://github.com/gin-gonic/gin/blob/master/docs/doc.md#dont-trust-all-proxies for details.
 [GIN-debug] Listening and serving HTTP on :8081
+[GIN] 2026/04/15 - 22:11:46 | 404 | 398.958µs |       127.0.0.1 | GET      "/status"
+[GIN] 2026/04/15 - 22:11:49 | 404 |  1.542µs |       127.0.0.1 | GET      "/status"
+[GIN] 2026/04/15 - 22:11:53 | 404 |  7.458µs |       127.0.0.1 | GET      "/status"
+[GIN] 2026/04/15 - 22:11:56 | 404 |  2.292µs |       127.0.0.1 | GET      "/status"
+[GIN] 2026/04/15 - 22:15:46 | 404 |  7.167µs |       127.0.0.1 | GET      "/status"
+[GIN] 2026/04/15 - 22:15:50 | 404 |   4.25µs |       127.0.0.1 | GET      "/status"
+[GIN] 2026/04/15 - 22:15:53 | 404 |  2.084µs |       127.0.0.1 | GET      "/status"
+[GIN] 2026/04/15 - 22:15:57 | 404 |   2.25µs |       127.0.0.1 | GET      "/status"
+signal: killed

@@ -6,7 +6,15 @@
 
 [GIN-debug] POST   /api/v1/engine/analyze    --> github.com/chess-puzzle-app/backend/internal/engine.(*EngineHandler).Analyze-fm (4 handlers)
 [GIN-debug] POST   /api/v1/engine/play       --> github.com/chess-puzzle-app/backend/internal/engine.(*EngineHandler).Play-fm (4 handlers)
-2026/04/13 23:53:40 Engine Service starting on port 8083
+2026/04/14 10:44:22 Engine Service starting on port 8083
 [GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
 Please check https://github.com/gin-gonic/gin/blob/master/docs/doc.md#dont-trust-all-proxies for details.
 [GIN-debug] Listening and serving HTTP on :8083
+[GIN] 2026/04/15 - 22:11:46 | 404 |  732.5µs |       127.0.0.1 | GET      "/status"
+[GIN] 2026/04/15 - 22:11:49 | 404 |  1.959µs |       127.0.0.1 | GET      "/status"
+[GIN] 2026/04/15 - 22:11:53 | 404 |  7.375µs |       127.0.0.1 | GET      "/status"
+[GIN] 2026/04/15 - 22:11:56 | 404 |   2.25µs |       127.0.0.1 | GET      "/status"
+[GIN] 2026/04/15 - 22:15:46 | 404 |  4.458µs |       127.0.0.1 | GET      "/status"
+[GIN] 2026/04/15 - 22:15:50 | 404 |  3.333µs |       127.0.0.1 | GET      "/status"
+[GIN] 2026/04/15 - 22:15:53 | 404 |  1.833µs |       127.0.0.1 | GET      "/status"
+[GIN] 2026/04/15 - 22:15:57 | 404 |    2.5µs |       127.0.0.1 | GET      "/status"

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/chess-puzzle-app/backend/internal/database"
+	"github.com/chess-puzzle-app/backend/internal/users"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -66,11 +67,12 @@ func toPuzzleResponse(p database.Puzzle) PuzzleResponse {
 }
 
 type PuzzleHandler struct {
-	svc *PuzzleService
+	svc     *PuzzleService
+	userSvc *users.UserService
 }
 
-func NewPuzzleHandler(svc *PuzzleService) *PuzzleHandler {
-	return &PuzzleHandler{svc: svc}
+func NewPuzzleHandler(svc *PuzzleService, userSvc *users.UserService) *PuzzleHandler {
+	return &PuzzleHandler{svc: svc, userSvc: userSvc}
 }
 
 func (h *PuzzleHandler) CreatePuzzle(c *gin.Context) {
@@ -131,6 +133,18 @@ func (h *PuzzleHandler) GetPuzzle(c *gin.Context) {
 		return
 	}
 
+	// Check and increment puzzle usage limit
+	userID := c.MustGet("user_id").(uuid.UUID)
+	canUse, err := h.userSvc.UsePuzzle(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to check limits"})
+		return
+	}
+	if !canUse {
+		c.JSON(http.StatusForbidden, gin.H{"error": "daily puzzle limit reached", "code": "LIMIT_REACHED"})
+		return
+	}
+
 	puzzle, err := h.svc.GetPuzzle(id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "puzzle not found"})
@@ -140,14 +154,46 @@ func (h *PuzzleHandler) GetPuzzle(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"puzzle": toPuzzleResponse(*puzzle)})
 }
 
+func (h *PuzzleHandler) GetDailyPuzzle(c *gin.Context) {
+	// Check and increment puzzle usage limit
+	userID := c.MustGet("user_id").(uuid.UUID)
+	canUse, err := h.userSvc.UsePuzzle(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to check limits"})
+		return
+	}
+	if !canUse {
+		c.JSON(http.StatusForbidden, gin.H{"error": "daily puzzle limit reached", "code": "LIMIT_REACHED"})
+		return
+	}
+
+	puzzle, err := h.svc.GetDailyPuzzle()
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "daily puzzle not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"puzzle": toPuzzleResponse(*puzzle)})
+}
+
 func (h *PuzzleHandler) ListPuzzles(c *gin.Context) {
 	pageStr := c.DefaultQuery("page", "1")
 	limitStr := c.DefaultQuery("limit", "10")
+	categoryIDStr := c.Query("category_id")
+	difficulty := c.Query("difficulty")
 
 	page, _ := strconv.Atoi(pageStr)
 	limit, _ := strconv.Atoi(limitStr)
 
-	puzzles, total, err := h.svc.ListPuzzles(page, limit)
+	var categoryID *uuid.UUID
+	if categoryIDStr != "" {
+		id, err := uuid.Parse(categoryIDStr)
+		if err == nil {
+			categoryID = &id
+		}
+	}
+
+	puzzles, total, err := h.svc.ListPuzzles(page, limit, categoryID, difficulty)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

@@ -140,9 +140,15 @@ func (s *EngineService) AnalyzePosition(ctx context.Context, fen string, depth i
 	if depth < 1 {
 		depth = 12
 	}
-	if depth > 30 {
-		depth = 30
+	
+	// Subscription Max Depth Capping
+	maxDepth := 30
+	// We'll trust the caller (handler) to pass the correct depth based on plan
+	// but we add a safety ceiling here
+	if depth > maxDepth {
+		depth = maxDepth
 	}
+
 	if movetime < 500 {
 		movetime = 1000
 	}
@@ -173,7 +179,7 @@ func (s *EngineService) analyze(ctx context.Context, w *engineWorker, fen string
 		}
 	}
 
-	fmt.Fprintf(w.stdin, "setoption name MultiPV value 3\n")
+	fmt.Fprintf(w.stdin, "setoption name MultiPV value %d\n", 3) // Default to 3, but caller can override if needed
 	fmt.Fprintf(w.stdin, "position fen %s\n", fen)
 	if depth > 0 {
 		fmt.Fprintf(w.stdin, "go depth %d movetime %d\n", depth, movetime)
@@ -182,8 +188,8 @@ func (s *EngineService) analyze(ctx context.Context, w *engineWorker, fen string
 	}
 
 	var result AnalysisResult
-	done := make(chan bool)
-	errChan := make(chan error)
+	done := make(chan bool, 1)
+	errChan := make(chan error, 1)
 
 	// Professional UCI parser — captures depth, mate, cp, pv
 	go func() {

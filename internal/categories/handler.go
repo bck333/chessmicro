@@ -20,6 +20,10 @@ func (h *CategoryHandler) Create(c *gin.Context) {
 	var input struct {
 		Name        string `json:"name" binding:"required"`
 		Description string `json:"description"`
+		Group       string `json:"group"`
+		FEN         string `json:"fen"`
+		Targets     string `json:"targets"`
+		XP          int    `json:"xp"`
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -30,6 +34,13 @@ func (h *CategoryHandler) Create(c *gin.Context) {
 	cat := &database.Category{
 		Name:        input.Name,
 		Description: input.Description,
+		Group:       input.Group,
+		FEN:         input.FEN,
+		Targets:     input.Targets,
+		XP:          input.XP,
+	}
+	if cat.Group == "" {
+		cat.Group = "practice"
 	}
 
 	if err := h.svc.CreateCategory(cat); err != nil {
@@ -41,7 +52,8 @@ func (h *CategoryHandler) Create(c *gin.Context) {
 }
 
 func (h *CategoryHandler) List(c *gin.Context) {
-	cats, err := h.svc.ListCategories()
+	group := c.Query("group")
+	cats, err := h.svc.ListCategories(group)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -59,8 +71,12 @@ func (h *CategoryHandler) Update(c *gin.Context) {
 	}
 
 	var input struct {
-		Name        string `json:"name"`
-		Description string `json:"description"`
+		Name        string  `json:"name"`
+		Description string  `json:"description"`
+		Group       string  `json:"group"`
+		FEN         *string `json:"fen"`
+		Targets     *string `json:"targets"`
+		XP          *int    `json:"xp"`
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -79,6 +95,18 @@ func (h *CategoryHandler) Update(c *gin.Context) {
 	}
 	if input.Description != "" {
 		cat.Description = input.Description
+	}
+	if input.Group != "" {
+		cat.Group = input.Group
+	}
+	if input.FEN != nil {
+		cat.FEN = *input.FEN
+	}
+	if input.Targets != nil {
+		cat.Targets = *input.Targets
+	}
+	if input.XP != nil {
+		cat.XP = *input.XP
 	}
 
 	if err := h.svc.UpdateCategory(cat); err != nil {

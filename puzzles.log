@@ -1,5 +1,5 @@
-2026/04/13 23:53:40 Database connection established
-2026/04/13 23:53:40 Database migrations applied
+2026/04/14 10:44:21 Database connection established
+2026/04/14 10:44:21 Database migrations applied
 [GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
 
 [GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
@@ -9,12 +9,15 @@
 [GIN-debug] GET    /api/v1/puzzles           --> github.com/chess-puzzle-app/backend/internal/puzzles.(*PuzzleHandler).ListPuzzles-fm (4 handlers)
 [GIN-debug] GET    /api/v1/puzzles/:id       --> github.com/chess-puzzle-app/backend/internal/puzzles.(*PuzzleHandler).GetPuzzle-fm (4 handlers)
 [GIN-debug] GET    /api/v1/categories        --> github.com/chess-puzzle-app/backend/internal/categories.(*CategoryHandler).List-fm (4 handlers)
-2026/04/13 23:53:40 Puzzle Service starting on port 8082
+2026/04/14 10:44:21 Puzzle Service starting on port 8082
 [GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
 Please check https://github.com/gin-gonic/gin/blob/master/docs/doc.md#dont-trust-all-proxies for details.
 [GIN-debug] Listening and serving HTTP on :8082
-[GIN] 2026/04/13 - 23:53:47 | 200 |   3.13ms |             ::1 | GET      "/api/v1/puzzles?page=1&limit=10"
-[GIN] 2026/04/13 - 23:56:31 | 200 |  223.5µs |             ::1 | GET      "/api/v1/puzzles?page=1&limit=10"
-[GIN] 2026/04/13 - 23:56:31 | 200 | 198.916µs |             ::1 | GET      "/api/v1/puzzles?page=1&limit=10"
-[GIN] 2026/04/13 - 23:56:34 | 200 | 330.458µs |             ::1 | GET      "/api/v1/puzzles/5ef17695-9321-46bd-8d2a-1041cf3f07fd"
-[GIN] 2026/04/13 - 23:56:34 | 200 | 231.792µs |             ::1 | GET      "/api/v1/puzzles/5ef17695-9321-46bd-8d2a-1041cf3f07fd"
+[GIN] 2026/04/15 - 22:11:46 | 404 | 221.375µs |       127.0.0.1 | GET      "/status"
+[GIN] 2026/04/15 - 22:11:49 | 404 |  1.458µs |       127.0.0.1 | GET      "/status"
+[GIN] 2026/04/15 - 22:11:53 | 404 |  6.083µs |       127.0.0.1 | GET      "/status"
+[GIN] 2026/04/15 - 22:11:56 | 404 |  1.917µs |       127.0.0.1 | GET      "/status"
+[GIN] 2026/04/15 - 22:15:46 | 404 |  2.166µs |       127.0.0.1 | GET      "/status"
+[GIN] 2026/04/15 - 22:15:50 | 404 |  6.709µs |       127.0.0.1 | GET      "/status"
+[GIN] 2026/04/15 - 22:15:53 | 404 |    2.5µs |       127.0.0.1 | GET      "/status"
+[GIN] 2026/04/15 - 22:15:57 | 404 |  3.125µs |       127.0.0.1 | GET      "/status"

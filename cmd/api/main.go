@@ -8,7 +8,9 @@ import (
 	"github.com/chess-puzzle-app/backend/internal/categories"
 	"github.com/chess-puzzle-app/backend/internal/config"
 	"github.com/chess-puzzle-app/backend/internal/database"
+	"github.com/chess-puzzle-app/backend/internal/difficulties"
 	"github.com/chess-puzzle-app/backend/internal/engine"
+	"github.com/chess-puzzle-app/backend/internal/learning"
 	"github.com/chess-puzzle-app/backend/internal/middleware"
 	"github.com/chess-puzzle-app/backend/internal/puzzles"
 	"github.com/chess-puzzle-app/backend/internal/settings"
@@ -25,6 +27,18 @@ func main() {
 	}
 
 	r := gin.Default()
+
+	// Status Endpoint
+	r.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status": "Online",
+			"system": "Tactics Master Monolith",
+			"version": "1.0.0",
+			"endpoints": gin.H{
+				"api": "/api/v1",
+			},
+		})
+	})
 
 	// CORS Middleware (Simple for Phase 1)
 	r.Use(func(c *gin.Context) {
@@ -45,6 +59,8 @@ func main() {
 	adminSvc := admin.NewAdminService(db)
 	categorySvc := categories.NewCategoryService(db)
 	settingSvc := settings.NewSettingService(db)
+	difficultySvc := difficulties.NewDifficultyService(db)
+	learningSvc := learning.NewLearningService(db)
 
 	engineSvc, err := engine.NewEngineService(cfg.StockfishPath, 2) // Pool of 2 for dev
 	if err != nil {
@@ -55,15 +71,17 @@ func main() {
 
 	// Handlers
 	authHandler := auth.NewAuthHandler(authSvc)
-	puzzleHandler := puzzles.NewPuzzleHandler(puzzleSvc)
+	puzzleHandler := puzzles.NewPuzzleHandler(puzzleSvc, userSvc)
 	userHandler := users.NewUserHandler(userSvc)
 	adminHandler := admin.NewAdminHandler(adminSvc, engineSvc)
 	categoryHandler := categories.NewCategoryHandler(categorySvc)
 	settingHandler := settings.NewSettingHandler(settingSvc)
+	difficultyHandler := difficulties.NewDifficultyHandler(difficultySvc)
+	learningHandler := learning.NewLearningHandler(learningSvc)
 
 	var engineHandler *engine.EngineHandler
 	if engineSvc != nil {
-		engineHandler = engine.NewEngineHandler(engineSvc)
+		engineHandler = engine.NewEngineHandler(engineSvc, userSvc)
 	}
 
 	api := r.Group("/api/v1")
@@ -80,11 +98,17 @@ func main() {
 		userGroup.Use(middleware.AuthMiddleware(cfg))
 		{
 			userGroup.GET("/me", userHandler.GetMe)
+			userGroup.POST("/hint", userHandler.UseHint)
+			userGroup.POST("/add-xp", userHandler.AddXP)
+			userGroup.POST("/progress", userHandler.SaveProgress)
+			userGroup.GET("/progress", userHandler.GetProgressList)
 		}
 
 		// Engine
 		if engineHandler != nil {
 			engineGroup := api.Group("/engine")
+			engineGroup.Use(middleware.AuthMiddleware(cfg))
+			engineGroup.Use(middleware.UsageMiddleware(userSvc))
 			{
 				engineGroup.POST("/analyze", engineHandler.Analyze)
 				engineGroup.POST("/play", engineHandler.Play)
@@ -93,16 +117,29 @@ func main() {
 
 		// Puzzles
 		puzzleGroup := api.Group("/puzzles")
+		puzzleGroup.Use(middleware.AuthMiddleware(cfg))
+		puzzleGroup.Use(middleware.UsageMiddleware(userSvc))
 		{
 			puzzleGroup.GET("", puzzleHandler.ListPuzzles)
+			puzzleGroup.GET("/daily", puzzleHandler.GetDailyPuzzle)
 			puzzleGroup.GET("/:id", puzzleHandler.GetPuzzle)
-			
-			// Protected Puzzle Routes
-			puzzleProtected := puzzleGroup.Group("")
-			puzzleProtected.Use(middleware.AuthMiddleware(cfg))
-			{
-				puzzleProtected.POST("/:id/solve", puzzleHandler.SolvePuzzle)
-			}
+			puzzleGroup.POST("/:id/solve", puzzleHandler.SolvePuzzle)
+		}
+
+		// Difficulties (Public for selection)
+		api.GET("/difficulties", difficultyHandler.List)
+		api.GET("/categories", categoryHandler.List)
+
+		// Learning LMS (Public / Auth Protected for Mobile App)
+		learningGroup := api.Group("/learning")
+		learningGroup.Use(middleware.AuthMiddleware(cfg))
+		{
+			learningGroup.GET("/categories", learningHandler.ListCategories)
+			learningGroup.GET("/categories/:id", learningHandler.GetCategory)
+			learningGroup.GET("/lessons", learningHandler.ListLessons)
+			learningGroup.GET("/lessons/:id", learningHandler.GetLesson)
+			learningGroup.GET("/lessons/:id/steps", learningHandler.ListSteps)
+			learningGroup.GET("/steps/:id", learningHandler.GetStep)
 		}
 
 		// Admin (Protected)
@@ -125,9 +162,31 @@ func main() {
 			adminGroup.PUT("/categories/:id", categoryHandler.Update)
 			adminGroup.DELETE("/categories/:id", categoryHandler.Delete)
 
+			// Difficulties
+			adminGroup.POST("/difficulties", difficultyHandler.Create)
+			adminGroup.PUT("/difficulties/:id", difficultyHandler.Update)
+			adminGroup.DELETE("/difficulties/:id", difficultyHandler.Delete)
+
 			// Settings
 			adminGroup.GET("/settings", settingHandler.List)
 			adminGroup.POST("/settings", settingHandler.Update)
+
+			// Learning LMS Admin
+			adminGroup.GET("/learning/categories", learningHandler.ListCategories)
+			adminGroup.POST("/learning/categories", learningHandler.CreateCategory)
+			adminGroup.PUT("/learning/categories/:id", learningHandler.UpdateCategory)
+			adminGroup.DELETE("/learning/categories/:id", learningHandler.DeleteCategory)
+
+			adminGroup.GET("/learning/lessons", learningHandler.ListLessons)
+			adminGroup.POST("/learning/lessons", learningHandler.CreateLesson)
+			adminGroup.PUT("/learning/lessons/:id", learningHandler.UpdateLesson)
+			adminGroup.DELETE("/learning/lessons/:id", learningHandler.DeleteLesson)
+
+			adminGroup.GET("/learning/lessons/:id/steps", learningHandler.ListSteps)
+			adminGroup.POST("/learning/lessons/:id/steps", learningHandler.CreateStep)
+			adminGroup.PUT("/learning/steps/:id", learningHandler.UpdateStep)
+			adminGroup.DELETE("/learning/steps/:id", learningHandler.DeleteStep)
+			adminGroup.PUT("/learning/lessons/:id/steps/reorder", learningHandler.ReorderSteps)
 		}
 	}
 

@@ -19,11 +19,6 @@ type Config struct {
 	GoogleClientID string
 	StockfishPath  string
 
-	// Microservices URLs (for Gateway routing)
-	IdentityURL string
-	PuzzlesURL  string
-	EngineURL   string
-	AdminURL    string
 	AdminFrontendURL string
 }
 
@@ -44,10 +39,6 @@ func LoadConfig() *Config {
 		JWTSecret:      getEnv("JWT_SECRET", "supersecretkey"),
 		GoogleClientID: getEnv("GOOGLE_CLIENT_ID", ""),
 		StockfishPath:  getEnv("STOCKFISH_PATH", "/opt/homebrew/bin/stockfish"),
-		IdentityURL:    getEnv("IDENTITY_URL", "http://localhost:8081"),
-		PuzzlesURL:     getEnv("PUZZLES_URL", "http://localhost:8082"),
-		EngineURL:      getEnv("ENGINE_URL", "http://localhost:8083"),
-		AdminURL:       getEnv("ADMIN_URL", "http://localhost:8084"),
 		AdminFrontendURL: getEnv("ADMIN_FRONTEND_URL", "http://localhost:3000"),
 	}
 }

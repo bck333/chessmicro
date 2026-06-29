@@ -19,9 +19,13 @@ func (s *CategoryService) CreateCategory(cat *database.Category) error {
 	return s.db.Create(cat).Error
 }
 
-func (s *CategoryService) ListCategories() ([]database.Category, error) {
+func (s *CategoryService) ListCategories(group string) ([]database.Category, error) {
 	var cats []database.Category
-	err := s.db.Find(&cats).Error
+	query := s.db.Model(&database.Category{})
+	if group != "" {
+		query = query.Where("`group` = ?", group)
+	}
+	err := query.Find(&cats).Error
 	return cats, err
 }
 
