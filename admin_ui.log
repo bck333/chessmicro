@@ -4,7 +4,10 @@
 
 ▲ Next.js 16.2.2 (Turbopack)
 - Local:         http://localhost:3000
-- Network:       http://192.168.1.9:3000
+- Network:       http://192.168.29.105:3000
 - Environments: .env.local
-✓ Ready in 298ms
+✓ Ready in 654ms
 
+ GET /login 200 in 941ms (next.js: 506ms, application-code: 435ms)
+ GET /dashboard/categories 404 in 1392ms (next.js: 756ms, application-code: 636ms)
+ GET /login 200 in 569ms (next.js: 8ms, application-code: 562ms)

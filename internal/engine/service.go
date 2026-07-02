@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -37,13 +38,26 @@ type EngineService struct {
 	pool       chan *engineWorker
 	mu         sync.Mutex
 	workers    []*engineWorker
+	metrics    EngineMetrics
 }
 
-// Status information about the engine pool
+// EngineMetrics tracks production observability counters for the engine.
+type EngineMetrics struct {
+	AnalyzeRequests   int64
+	AnalyzeFailures   int64
+	AnalyzeTimeouts   int64
+	PlayRequests      int64
+	PlayFailures      int64
+	TotalLatencyMicro int64 // sum of analyze+play latency in microseconds
+}
+
+// EngineStatus information about the engine pool
 type EngineStatus struct {
 	ActiveWorkers int  `json:"active_workers"`
 	TotalWorkers  int  `json:"total_workers"`
 	IsResponsive  bool `json:"is_responsive"`
+	CacheSize     int  `json:"cache_size"`
+	Metrics       EngineMetrics `json:"metrics"`
 }
 
 type engineWorker struct {
@@ -55,6 +69,9 @@ type engineWorker struct {
 
 // NewEngineService creates a new engine service with a pool of workers
 func NewEngineService(binaryPath string, poolSize int) (*EngineService, error) {
+	if poolSize < 1 {
+		poolSize = 1
+	}
 	svc := &EngineService{
 		binaryPath: binaryPath,
 		pool:       make(chan *engineWorker, poolSize),
@@ -72,6 +89,63 @@ func NewEngineService(binaryPath string, poolSize int) (*EngineService, error) {
 	}
 
 	return svc, nil
+}
+
+// restartWorker replaces a dead worker with a fresh one. It is best-effort;
+// if it fails, a nil worker is returned and the caller should treat the engine
+// as unavailable for that request.
+func (s *EngineService) restartWorker(dead *engineWorker) *engineWorker {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	// Remove dead worker from the workers slice.
+	for i, w := range s.workers {
+		if w == dead {
+			s.workers = append(s.workers[:i], s.workers[i+1:]...)
+			break
+		}
+	}
+	// Kill the dead process if still around.
+	if dead != nil && dead.cmd != nil && dead.cmd.Process != nil {
+		_ = dead.cmd.Process.Kill()
+	}
+	w, err := s.startWorker()
+	if err != nil {
+		return nil
+	}
+	s.workers = append(s.workers, w)
+	return w
+}
+
+// acquireWorker fetches a healthy worker from the pool, restarting it if it
+// appears dead.
+func (s *EngineService) acquireWorker(ctx context.Context) (*engineWorker, error) {
+	select {
+	case w := <-s.pool:
+		if w == nil || w.cmd == nil || w.cmd.Process == nil || w.cmd.ProcessState != nil {
+			// ProcessState != nil means it has exited.
+			replacement := s.restartWorker(w)
+			if replacement == nil {
+				return nil, fmt.Errorf("engine worker unavailable")
+			}
+			return replacement, nil
+		}
+		return w, nil
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	}
+}
+
+// releaseWorker returns a worker to the pool. If the worker is dead, it is
+// restarted before being returned.
+func (s *EngineService) releaseWorker(w *engineWorker) {
+	if w == nil || w.cmd == nil || w.cmd.Process == nil || w.cmd.ProcessState != nil {
+		replacement := s.restartWorker(w)
+		if replacement != nil {
+			s.pool <- replacement
+		}
+		return
+	}
+	s.pool <- w
 }
 
 func (s *EngineService) startWorker() (*engineWorker, error) {
@@ -157,13 +231,12 @@ func (s *EngineService) AnalyzePosition(ctx context.Context, fen string, depth i
 	}
 
 	// Acquire a worker from the pool
-	select {
-	case worker := <-s.pool:
-		defer func() { s.pool <- worker }() // Return worker to pool
-		return s.analyze(ctx, worker, fen, depth, movetime)
-	case <-ctx.Done():
-		return nil, ctx.Err()
+	worker, err := s.acquireWorker(ctx)
+	if err != nil {
+		return nil, err
 	}
+	defer s.releaseWorker(worker)
+	return s.analyze(ctx, worker, fen, depth, movetime)
 }
 
 func (s *EngineService) analyze(ctx context.Context, w *engineWorker, fen string, depth int, movetime int) (*AnalysisResult, error) {
@@ -296,13 +369,12 @@ func (s *EngineService) PlayMove(ctx context.Context, fen string, opts PlayOptio
 	}
 
 	// Acquire a worker from the pool
-	select {
-	case worker := <-s.pool:
-		defer func() { s.pool <- worker }()
-		return s.play(ctx, worker, fen, opts)
-	case <-ctx.Done():
-		return nil, ctx.Err()
+	worker, err := s.acquireWorker(ctx)
+	if err != nil {
+		return nil, err
 	}
+	defer s.releaseWorker(worker)
+	return s.play(ctx, worker, fen, opts)
 }
 
 func (s *EngineService) play(ctx context.Context, w *engineWorker, fen string, opts PlayOptions) (*AnalysisResult, error) {
@@ -452,15 +524,22 @@ func (s *EngineService) Stop() {
 // GetStatus checks the health of the engine pool
 func (s *EngineService) GetStatus() EngineStatus {
 	s.mu.Lock()
-	defer s.mu.Unlock()
-
 	status := EngineStatus{
 		ActiveWorkers: len(s.pool),
 		TotalWorkers:  len(s.workers),
 		IsResponsive:  false,
+		Metrics: EngineMetrics{
+			AnalyzeRequests:   atomic.LoadInt64(&s.metrics.AnalyzeRequests),
+			AnalyzeFailures:   atomic.LoadInt64(&s.metrics.AnalyzeFailures),
+			AnalyzeTimeouts:   atomic.LoadInt64(&s.metrics.AnalyzeTimeouts),
+			PlayRequests:      atomic.LoadInt64(&s.metrics.PlayRequests),
+			PlayFailures:      atomic.LoadInt64(&s.metrics.PlayFailures),
+			TotalLatencyMicro: atomic.LoadInt64(&s.metrics.TotalLatencyMicro),
+		},
 	}
+	s.mu.Unlock()
 
-	if len(s.workers) == 0 {
+	if status.TotalWorkers == 0 {
 		return status
 	}
 

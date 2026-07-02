@@ -9,12 +9,13 @@ import (
 )
 
 type AdminHandler struct {
-	svc       *AdminService
-	engineSvc *engine.EngineService
+	svc           *AdminService
+	engineSvc     *engine.EngineService
+	engineHandler *engine.EngineHandler
 }
 
-func NewAdminHandler(svc *AdminService, engineSvc *engine.EngineService) *AdminHandler {
-	return &AdminHandler{svc: svc, engineSvc: engineSvc}
+func NewAdminHandler(svc *AdminService, engineSvc *engine.EngineService, engineHandler *engine.EngineHandler) *AdminHandler {
+	return &AdminHandler{svc: svc, engineSvc: engineSvc, engineHandler: engineHandler}
 }
 
 func (h *AdminHandler) GetStats(c *gin.Context) {
@@ -60,5 +61,8 @@ func (h *AdminHandler) GetEngineStatus(c *gin.Context) {
 	}
 
 	status := h.engineSvc.GetStatus()
+	if h.engineHandler != nil {
+		status.CacheSize = h.engineHandler.CacheSize()
+	}
 	c.JSON(http.StatusOK, status)
 }

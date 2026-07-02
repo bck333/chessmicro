@@ -4,24 +4,44 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/chess-puzzle-app/backend/internal/users"
 	"github.com/gin-gonic/gin"
 )
 
+// recordAnalyze updates observability counters for an analyze request.
+func (h *EngineHandler) recordAnalyze(start time.Time, err error, timedOut bool) {
+	atomic.AddInt64(&h.svc.metrics.AnalyzeRequests, 1)
+	atomic.AddInt64(&h.svc.metrics.TotalLatencyMicro, time.Since(start).Microseconds())
+	if timedOut {
+		atomic.AddInt64(&h.svc.metrics.AnalyzeTimeouts, 1)
+	}
+	if err != nil {
+		atomic.AddInt64(&h.svc.metrics.AnalyzeFailures, 1)
+	}
+}
+
+func (h *EngineHandler) recordPlay(start time.Time, err error) {
+	atomic.AddInt64(&h.svc.metrics.PlayRequests, 1)
+	atomic.AddInt64(&h.svc.metrics.TotalLatencyMicro, time.Since(start).Microseconds())
+	if err != nil {
+		atomic.AddInt64(&h.svc.metrics.PlayFailures, 1)
+	}
+}
+
 type EngineHandler struct {
 	svc     *EngineService
 	userSvc *users.UserService
-	cache   *sync.Map // FEN -> *AnalysisResult cache
+	cache   *AnalysisCache
 }
 
 func NewEngineHandler(svc *EngineService, userSvc *users.UserService) *EngineHandler {
 	return &EngineHandler{
 		svc:     svc,
 		userSvc: userSvc,
-		cache:   &sync.Map{},
+		cache:   NewAnalysisCache(256, 10*time.Minute),
 	}
 }
 
@@ -67,24 +87,21 @@ func (h *EngineHandler) Analyze(c *gin.Context) {
 		analysisDepth = maxDepth
 	}
 
-	// Check cache
-	if cachedResult, ok := h.cache.Load(req.FEN); ok {
-		// Only return cache if depth is sufficient
-		res := cachedResult.(*AnalysisResult)
-		if res.Depth >= analysisDepth && len(res.Lines) >= multiPV {
-			c.JSON(http.StatusOK, cachedResult)
-			return
-		}
+	// Check cache (bounded + TTL). Only return if depth and line count are sufficient.
+	if cachedResult, ok := h.cache.Load(req.FEN, analysisDepth, multiPV); ok {
+		c.JSON(http.StatusOK, cachedResult)
+		return
 	}
 
+	start := time.Now()
 	// Create context with timeout for analysis (movetime + 3s buffer)
 	timeout := time.Duration(req.Movetime+3000) * time.Millisecond
 	ctx, cancel := context.WithTimeout(c.Request.Context(), timeout)
 	defer cancel()
 
-	// Update service to handle MultiPV override if we haven't already
-	// Actually, let's just use the depth and if we want MultiPV we might need to update the service method
 	result, err := h.svc.AnalyzePosition(ctx, req.FEN, analysisDepth, req.Movetime)
+	timedOut := err == context.DeadlineExceeded
+	h.recordAnalyze(start, err, timedOut)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "engine analysis failed: " + err.Error()})
 		return
@@ -98,6 +115,9 @@ func (h *EngineHandler) Analyze(c *gin.Context) {
 
 	h.cache.Store(req.FEN, result)
 	c.JSON(http.StatusOK, result)
+}// CacheSize returns the current analysis cache size (for admin/observability).
+func (h *EngineHandler) CacheSize() int {
+	return h.cache.Size()
 }
 
 type PlayRequest struct {
@@ -120,6 +140,7 @@ func (h *EngineHandler) Play(c *gin.Context) {
 		req.Movetime = 500
 	}
 
+	start := time.Now()
 	// Create context with timeout for play move (movetime + buffer)
 	timeout := time.Duration(req.Movetime+5000) * time.Millisecond
 	ctx, cancel := context.WithTimeout(c.Request.Context(), timeout)
@@ -134,6 +155,7 @@ func (h *EngineHandler) Play(c *gin.Context) {
 	}
 
 	result, err := h.svc.PlayMove(ctx, req.FEN, opts)
+	h.recordPlay(start, err)
 	if err != nil {
 		fmt.Printf("PlayMove error: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "engine play failed: " + err.Error()})

@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/chess-puzzle-app/backend/internal/admin"
+	"github.com/chess-puzzle-app/backend/internal/analysis"
 	"github.com/chess-puzzle-app/backend/internal/auth"
 	"github.com/chess-puzzle-app/backend/internal/categories"
 	"github.com/chess-puzzle-app/backend/internal/config"
@@ -62,7 +63,7 @@ func main() {
 	difficultySvc := difficulties.NewDifficultyService(db)
 	learningSvc := learning.NewLearningService(db)
 
-	engineSvc, err := engine.NewEngineService(cfg.StockfishPath, 2) // Pool of 2 for dev
+	engineSvc, err := engine.NewEngineService(cfg.StockfishPath, cfg.EnginePoolSize)
 	if err != nil {
 		log.Printf("Warning: Could not start chess engine: %v", err)
 	} else {
@@ -73,16 +74,19 @@ func main() {
 	authHandler := auth.NewAuthHandler(authSvc)
 	puzzleHandler := puzzles.NewPuzzleHandler(puzzleSvc, userSvc)
 	userHandler := users.NewUserHandler(userSvc)
-	adminHandler := admin.NewAdminHandler(adminSvc, engineSvc)
 	categoryHandler := categories.NewCategoryHandler(categorySvc)
 	settingHandler := settings.NewSettingHandler(settingSvc)
 	difficultyHandler := difficulties.NewDifficultyHandler(difficultySvc)
 	learningHandler := learning.NewLearningHandler(learningSvc)
+	analysisSvc := analysis.NewAnalysisService(db)
+	analysisHandler := analysis.NewAnalysisHandler(analysisSvc)
 
 	var engineHandler *engine.EngineHandler
 	if engineSvc != nil {
 		engineHandler = engine.NewEngineHandler(engineSvc, userSvc)
 	}
+
+	adminHandler := admin.NewAdminHandler(adminSvc, engineSvc, engineHandler)
 
 	api := r.Group("/api/v1")
 	{
@@ -140,6 +144,17 @@ func main() {
 			learningGroup.GET("/lessons/:id", learningHandler.GetLesson)
 			learningGroup.GET("/lessons/:id/steps", learningHandler.ListSteps)
 			learningGroup.GET("/steps/:id", learningHandler.GetStep)
+		}
+
+		// Analysis Sessions (Protected) — save/resume analysis move trees
+		analysisGroup := api.Group("/analysis")
+		analysisGroup.Use(middleware.AuthMiddleware(cfg))
+		{
+			analysisGroup.GET("", analysisHandler.List)
+			analysisGroup.POST("", analysisHandler.Create)
+			analysisGroup.GET("/:id", analysisHandler.Get)
+			analysisGroup.PUT("/:id", analysisHandler.Update)
+			analysisGroup.DELETE("/:id", analysisHandler.Delete)
 		}
 
 		// Admin (Protected)

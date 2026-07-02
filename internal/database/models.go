@@ -128,8 +128,22 @@ type LessonStep struct {
 	UpdatedAt          time.Time `json:"updated_at"`
 }
 
+// AnalysisSession stores a user's saved analysis move tree as JSON so it can
+// be resumed later. The tree is stored as a single JSON blob to avoid
+// over-normalizing until there is a clear product need for node-level queries.
+type AnalysisSession struct {
+	ID            uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
+	UserID        uuid.UUID `gorm:"type:uuid;index" json:"user_id"`
+	Title         string    `json:"title"`
+	RootFEN       string    `json:"root_fen"`
+	CurrentNodeID string    `gorm:"default:'root'" json:"current_node_id"`
+	TreeJSON      string    `gorm:"type:text" json:"tree_json"`
+	CreatedAt     time.Time `gorm:"index" json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
+}
+
 func Migrate(db *gorm.DB) error {
-	if err := db.AutoMigrate(&User{}, &Puzzle{}, &Category{}, &Setting{}, &Difficulty{}, &UserProgress{}, &LearningCategory{}, &Lesson{}, &LessonStep{}); err != nil {
+	if err := db.AutoMigrate(&User{}, &Puzzle{}, &Category{}, &Setting{}, &Difficulty{}, &UserProgress{}, &LearningCategory{}, &Lesson{}, &LessonStep{}, &AnalysisSession{}); err != nil {
 		return err
 	}
 	return Seed(db)
